@@ -1,0 +1,66 @@
+﻿html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+
+#divBody{
+    height: 100%;
+    width: 100%;
+    background-color: aqua;
+    overflow-y:scroll;
+}
+#divDataInput {
+    height: 10%;
+    width: 100%;
+    background-color: tomato;
+}
+#divDataOutput {
+    height: 90%;
+    width: 100%;
+    background-color: yellow;
+    display: flex;
+    flex-direction: row;
+}
+#divDataOutputDisplay {
+    /** /
+    height: 100%;
+    width: 70%;
+    /**/
+    flex: 1;
+    background-color: green;
+    overflow: scroll;
+    position: relative;
+}
+#divDataReferencesDisplay {
+    /**/
+    height: 100%;
+    width: 30%;
+    /**/
+    background-color: teal;
+}
+#divPopup {
+    height: 100%;
+    width: 100%;
+    background-color: #FFFFFF80;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+/*<div id="divBody" >
+<div id="divDataInput" > </div >
+<div id="divDataOutput" >
+<div id="divDataOutputDisplay" > </div >
+<div id="divDataReferencesDisplay" > </div >
+</div >
+</div >*/
