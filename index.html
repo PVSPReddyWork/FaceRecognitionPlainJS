@@ -1,39 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <!--<script src='./PHP/ReceiveService.php'></script>-->
     <!--<script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>-->
-    <script defer src="JS/face-api.min.js"></script>
-    <script defer src="index.js"></script>
+    <script defer src="./JS/face-api.min.js"></script>
+    <script defer src="./index.js"></script>
     <!--<script defer src="JS/index.js"></script>-->
-    <link href="Styles/index.css" rel="stylesheet" />
+    <link href="./Styles/index.css" rel="stylesheet" />
     <title>Face Recognition</title>
-</head>
-<body onload="loadFoldersDataFromWindowsPC(); return null;"><!--onload="onLoadBody(); return null;"-->
+  </head>
+  <body onload="loadFoldersDataFromWindowsPC(); return null;">
+    <!--onload="onLoadBody(); return null;"-->
     <div id="header"></div>
     <div id="divBody">
-        <div id="divDataInput">
-            <div>
-                <input type="text" id="localImagesFolderPath" />
-            </div>
-            <input type="file" id="imageUpload" accept="image/png, image/gif, image/jpeg">
-            <input type="file" id="selectFolderForFiles">
-            <button onclick="OpenFoldersWithPHP(); return;">Get PHP Data</button>
-            <!--<input type="file" onchange="onUploadInputChangedEvent(this); return null;" id="imageUpload" accept="image/png, image/gif, image/jpeg">-->
+      <div id="divDataInput">
+        <div>
+          <input type="text" id="localImagesFolderPath" />
         </div>
-        <div id="divDataOutput">
-            <div id="divDataOutputDisplay">
-                <!--<img id="imageInputDisplay" />-->
-                <!--<canvas id="imageInputDisplay" />-->
-            </div>
-            <div id="divDataReferencesDisplay"></div>
+        <input
+          type="file"
+          id="imageUpload"
+          accept="image/png, image/gif, image/jpeg"
+        />
+        <input type="file" id="selectFolderForFiles" />
+        <button onclick="OpenFoldersWithPHP(); return;">Get PHP Data</button>
+        <!--<input type="file" onchange="onUploadInputChangedEvent(this); return null;" id="imageUpload" accept="image/png, image/gif, image/jpeg">-->
+      </div>
+      <div id="divDataOutput">
+        <div id="divDataOutputDisplay">
+          <!--<img id="imageInputDisplay" />-->
+          <!--<canvas id="imageInputDisplay" />-->
         </div>
+        <div id="divDataReferencesDisplay"></div>
+      </div>
     </div>
     <div id="divPopup">
-        <h1 id="textLoadingPopup">Loading</h1>
+      <h1 id="textLoadingPopup">Loading</h1>
     </div>
-</body>
+  </body>
 </html>

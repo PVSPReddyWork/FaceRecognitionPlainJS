@@ -1,63 +1,70 @@
 const imageUpload = document.getElementById('imageUpload');
 const divDataOutputDisplay = document.getElementById('divDataOutputDisplay');
 const divPopupDisplay = document.getElementById('divPopup');
-
+const MODELS_PATH = './JS/models';
 
 Promise.all([
-    faceapi.nets.faceRecognitionNet.loadFromUri('/JS/models'),
-    faceapi.nets.faceLandmark68Net.loadFromUri('/JS/models'),
-    faceapi.nets.ssdMobilenetv1.loadFromUri('/JS/models')
+  faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_PATH),
+  faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_PATH),
+  faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_PATH),
 ]).then(start);
 
-
 async function start() {
-    const container = document.getElementById('divDataOutputDisplay');
-    //container.style.position = 'relative'
-    //document.body.append(container)
-    const labeledFaceDescriptors = await loadLabeledImages()
-    const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6)
-    let image
-    let canvas
-    //document.body.append('Loaded')
-    const logger = document.getElementById('divDataReferencesDisplay');
-    logger.append('Loaded')
-    divPopupDisplay.style.visibility = "hidden";
-    imageUpload.addEventListener('change', async () => {
-        if (image) image.remove()
-        if (canvas) canvas.remove()
-        image = await faceapi.bufferToImage(imageUpload.files[0]);
-        /*
+  const container = document.getElementById('divDataOutputDisplay');
+  //container.style.position = 'relative'
+  //document.body.append(container)
+  const labeledFaceDescriptors = await loadLabeledImages();
+  const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
+  let image;
+  let canvas;
+  //document.body.append('Loaded')
+  const logger = document.getElementById('divDataReferencesDisplay');
+  logger.append('Loaded');
+  divPopupDisplay.style.visibility = 'hidden';
+  imageUpload.addEventListener('change', async () => {
+    if (image) image.remove();
+    if (canvas) canvas.remove();
+    image = await faceapi.bufferToImage(imageUpload.files[0]);
+    /*
         image.style.height = "500px";
         image.style.width = "450px";
         image.height = "500px";
         image.width = "450px";
         */
-        container.append(image)
-        canvas = faceapi.createCanvasFromMedia(image)
-        container.append(canvas)
-        const displaySize = { width: image.width, height: image.height }
-        faceapi.matchDimensions(canvas, displaySize)
-        const detections = await faceapi.detectAllFaces(image).withFaceLandmarks().withFaceDescriptors()
-        const resizedDetections = faceapi.resizeResults(detections, displaySize)
-        const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor))
-        results.forEach((result, i) => {
-            const box = resizedDetections[i].detection.box
-            const drawBox = new faceapi.draw.DrawBox(box, { label: result.toString() })
-            drawBox.draw(canvas)
-        })
-    })
+    container.append(image);
+    canvas = faceapi.createCanvasFromMedia(image);
+    container.append(canvas);
+    const displaySize = { width: image.width, height: image.height };
+    faceapi.matchDimensions(canvas, displaySize);
+    const detections = await faceapi
+      .detectAllFaces(image)
+      .withFaceLandmarks()
+      .withFaceDescriptors();
+    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+    const results = resizedDetections.map((d) =>
+      faceMatcher.findBestMatch(d.descriptor)
+    );
+    results.forEach((result, i) => {
+      const box = resizedDetections[i].detection.box;
+      const drawBox = new faceapi.draw.DrawBox(box, {
+        label: result.toString(),
+      });
+      drawBox.draw(canvas);
+    });
+  });
 }
 
 function loadFoldersDataFromWindowsPC() {
-    divPopupDisplay.style.visibility = "hidden";
-    const WINDOWS = "Windows";
-    const MAC = "MacOS";
-    const UNIX = "UNIX";
-    const LINUX = "Linux";
-    //let labeledImagesFolderPath = "";
-    let localImagesFolderPath = "C:\Users\pulagam.sivaprasadr\Downloads\labeled_images";//"C:\Users\pulagam.sivaprasadr\Downloads\FaceRecognition\labeled_images";//document.getElementById('localImagesFolderPath');
-    try {
-/*
+  divPopupDisplay.style.visibility = 'hidden';
+  const WINDOWS = 'Windows';
+  const MAC = 'MacOS';
+  const UNIX = 'UNIX';
+  const LINUX = 'Linux';
+  //let labeledImagesFolderPath = "";
+  let localImagesFolderPath =
+    'C:Userspulagam.sivaprasadrDownloadslabeled_images'; //"C:\Users\pulagam.sivaprasadr\Downloads\FaceRecognition\labeled_images";//document.getElementById('localImagesFolderPath');
+  try {
+    /*
         var OSName = "";
         if (navigator.appVersion.indexOf("Win") != -1) {
             OSName = WINDOWS;
@@ -94,46 +101,57 @@ function loadFoldersDataFromWindowsPC() {
                 }
             }
         }*/
-    }
-    catch (exception) {}
+  } catch (exception) {}
 }
 
-
 function loadLabeledImages() {
-    const labels = ['Black Widow', 'Captain America', 'Captain Marvel', 'Hawkeye', 'Jim Rhodes', 'Thor', 'Tony Stark']
-    return Promise.all(
-        labels.map(async label => {
-            const descriptions = []
-            for (let i = 1; i <= 2; i++) {
-                const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/WebDevSimplified/Face-Recognition-JavaScript/master/labeled_images/${label}/${i}.jpg`)
-                const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
-                descriptions.push(detections.descriptor)
-            }
+  const labels = [
+    'Black Widow',
+    'Captain America',
+    'Captain Marvel',
+    'Hawkeye',
+    'Jim Rhodes',
+    'Thor',
+    'Tony Stark',
+  ];
+  return Promise.all(
+    labels.map(async (label) => {
+      const descriptions = [];
+      for (let i = 1; i <= 2; i++) {
+        const img = await faceapi.fetchImage(
+          `https://raw.githubusercontent.com/WebDevSimplified/Face-Recognition-JavaScript/master/labeled_images/${label}/${i}.jpg`
+        );
+        const detections = await faceapi
+          .detectSingleFace(img)
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+        descriptions.push(detections.descriptor);
+      }
 
-            return new faceapi.LabeledFaceDescriptors(label, descriptions)
-        })
-    )
+      return new faceapi.LabeledFaceDescriptors(label, descriptions);
+    })
+  );
 }
 
 function readFile(file) {
-    const reader = new FileReader();
-    reader.addEventListener('load', (event) => {
-        const result = event.target.result;
-        // Do something with result
-    });
+  const reader = new FileReader();
+  reader.addEventListener('load', (event) => {
+    const result = event.target.result;
+    // Do something with result
+  });
 
-    reader.addEventListener('progress', (event) => {
-        if (event.loaded && event.total) {
-            const percent = (event.loaded / event.total) * 100;
-            console.log(`Progress: ${Math.round(percent)}`);
-        }
-    });
-    reader.readAsDataURL(file);
+  reader.addEventListener('progress', (event) => {
+    if (event.loaded && event.total) {
+      const percent = (event.loaded / event.total) * 100;
+      console.log(`Progress: ${Math.round(percent)}`);
+    }
+  });
+  reader.readAsDataURL(file);
 }
 
 function OpenFoldersWithPHP() {
-    try {
-/*
+  try {
+    /*
         var url = "C:\Users\pulagam.sivaprasadr\Downloads\labeled_images";//"../LocalImages";
         var localURL = "C:\Users\pulagam.sivaprasadr\Downloads\labeled_images";//"ProjFiles/LocalImages/";
         var obj = { "localURL": url };
@@ -159,8 +177,7 @@ function OpenFoldersWithPHP() {
         xobj.send(dbParam);
 */
     // alert(e.dataset.id+"\n"+e.dataset.option);
-    }
-    catch (ex) {}
+  } catch (ex) {}
 }
 
 /*
@@ -290,8 +307,6 @@ function loadLabeledImages() {
 }
 */
 
-
-
 /*
 async function start1() {
   const container = document.createElement('div')
@@ -337,7 +352,6 @@ function loadLabeledImages1() {
   )
 }
 */
-
 
 /*
 const input = await faceapi.toNetInput(videoEl)
@@ -396,4 +410,3 @@ async function extractFaceFromBox(imageRef, box) {
     }
   }
   */
-
