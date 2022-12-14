@@ -46,7 +46,7 @@ function AccessDriveImages(accessID) {
   } else {
     var headerObj = 'Contenttype=application/json&userRequest=FileAccess';
     var obj = {
-      method_name: 'allFilesInChildFolders',
+      method_name: 'allFilesInFoldersListFormat',
       service_request_data: { folder_id: accessID },
     };
     var dbParam = JSON.stringify(obj);
