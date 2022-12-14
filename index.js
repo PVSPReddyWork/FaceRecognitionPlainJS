@@ -11,7 +11,7 @@ Promise.all([
 ]).then(AccessDriveImages('1oEho4aHL_OPxPAUYBAKGRVHtwY7Lju37')); //.then(start);
 
 function AccessDriveImages(accessID) {
-  divPopupDisplay.style.visibility = 'hidden';
+  //divPopupDisplay.style.visibility = 'hidden';
   var urlPart1 = 'https://script.google.com/macros/s/';
   var id =
     'AKfycbzY7Ur9TbvrbQUlak3NSXvI_Oe8uIcq09Wxizm2HK67MFfNk4A090dPav_su-Q39Gr4'; //"AKfycbwPQZSMXpm2vtSsKYMRY12kENwd9n1rZyJAi_bSldBONoOUKvTEw90f4WIYFLEgU4b0";
