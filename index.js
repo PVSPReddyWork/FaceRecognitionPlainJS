@@ -57,7 +57,6 @@ async function start() {
   const container = document.getElementById('divDataOutputDisplay');
   //container.style.position = 'relative'
   //document.body.append(container)
-  //const labeledFaceDescriptors = await loadLabeledImages();
   const labeledFaceDescriptors = await loadLabeledImages(labeledImagesPaths);
   const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
   let image;
@@ -169,35 +168,6 @@ function loadFoldersDataFromWindowsPC() {
             }
         }*/
   } catch (exception) {}
-}
-
-function loadLabeledImages() {
-  const labels = [
-    'Black Widow',
-    'Captain America',
-    'Captain Marvel',
-    'Hawkeye',
-    'Jim Rhodes',
-    'Thor',
-    'Tony Stark',
-  ];
-  return Promise.all(
-    labels.map(async (label) => {
-      const descriptions = [];
-      for (let i = 1; i <= 2; i++) {
-        const img = await faceapi.fetchImage(
-          `https://raw.githubusercontent.com/WebDevSimplified/Face-Recognition-JavaScript/master/labeled_images/${label}/${i}.jpg`
-        );
-        const detections = await faceapi
-          .detectSingleFace(img)
-          .withFaceLandmarks()
-          .withFaceDescriptor();
-        descriptions.push(detections.descriptor);
-      }
-
-      return new faceapi.LabeledFaceDescriptors(label, descriptions);
-    })
-  );
 }
 
 function readFile(file) {
