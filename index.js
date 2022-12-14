@@ -2,18 +2,63 @@ const imageUpload = document.getElementById('imageUpload');
 const divDataOutputDisplay = document.getElementById('divDataOutputDisplay');
 const divPopupDisplay = document.getElementById('divPopup');
 const MODELS_PATH = './JS/models';
+var labeledImagesPaths = [];
 
 Promise.all([
   faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_PATH),
   faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_PATH),
   faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_PATH),
-]).then(start);
+]).then(AccessDriveImages('1oEho4aHL_OPxPAUYBAKGRVHtwY7Lju37')); //.then(start);
+
+function AccessDriveImages(accessID) {
+  divPopupDisplay.style.visibility = 'hidden';
+  var urlPart1 = 'https://script.google.com/macros/s/';
+  var id =
+    'AKfycbzY7Ur9TbvrbQUlak3NSXvI_Oe8uIcq09Wxizm2HK67MFfNk4A090dPav_su-Q39Gr4'; //"AKfycbwPQZSMXpm2vtSsKYMRY12kENwd9n1rZyJAi_bSldBONoOUKvTEw90f4WIYFLEgU4b0";
+  var extension = '/exec';
+  var serviceURL = urlPart1 + id + extension;
+  var xobj = new XMLHttpRequest();
+  xobj.onreadystatechange = function () {
+    if (xobj.readyState == 4 && xobj.status == 200) {
+      var responseData = xobj.response;
+      if (responseData != '') {
+        var options = JSON.parse(responseData);
+        var folderItemsList = options.folder_items;
+        var optionsHTML = '';
+        for (i = 0; i < folderItemsList.length; i++) {
+          //console.log(folderItemsList[i]);
+          const alteredGoogleURL =
+            'https://drive.google.com/uc?id=' + folderItemsList[i].id;
+          labeledImagesPaths.push(folderItemsList[i]);
+        }
+        start();
+      } else {
+        window.alert('Folder is empty');
+      }
+    } else {
+    }
+  };
+  if (accessID == '') {
+    xobj.open('GET', serviceURL, true);
+    xobj.send();
+  } else {
+    var headerObj = 'Contenttype=application/json&userRequest=FileAccess';
+    var obj = {
+      method_name: 'allFilesInChildFolders',
+      service_request_data: { folder_id: accessID },
+    };
+    var dbParam = JSON.stringify(obj);
+    xobj.open('POST', serviceURL + '?' + headerObj, true);
+    xobj.send(dbParam);
+  }
+}
 
 async function start() {
   const container = document.getElementById('divDataOutputDisplay');
   //container.style.position = 'relative'
   //document.body.append(container)
-  const labeledFaceDescriptors = await loadLabeledImages();
+  //const labeledFaceDescriptors = await loadLabeledImages();
+  const labeledFaceDescriptors = await loadLabeledImages(labeledImagesPaths);
   const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
   let image;
   let canvas;
@@ -52,6 +97,28 @@ async function start() {
       drawBox.draw(canvas);
     });
   });
+}
+
+function loadLabeledImages(paths) {
+  const labels = paths;
+  //const labels = ['Black Widow', 'Captain America', 'Captain Marvel', 'Hawkeye', 'Jim Rhodes', 'Thor', 'Tony Stark'];
+  return Promise.all(
+    labels.map(async (label) => {
+      const descriptions = [];
+
+      const imgSource = label.base64.includes('data:image/jpeg;base64')
+        ? label.base64
+        : 'data:image/jpeg;base64,' + label.base64;
+      const img = new Image();
+      img.src = imgSource;
+      const detections = await faceapi
+        .detectSingleFace(img)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+      descriptions.push(detections.descriptor);
+      return new faceapi.LabeledFaceDescriptors(label.name, descriptions);
+    })
+  );
 }
 
 function loadFoldersDataFromWindowsPC() {
