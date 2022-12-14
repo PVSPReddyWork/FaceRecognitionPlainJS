@@ -1,95 +1,110 @@
-const imageUpload = document.getElementById('imageUpload'),
-  divDataOutputDisplay = document.getElementById('divDataOutputDisplay'),
-  divPopupDisplay = document.getElementById('divPopup'),
-  MODELS_PATH = './JS/models',
-  APIAccessCode =
-    'AKfycbwip48-94Ot2WwXuxGlBYgB6HoDWc4_VcSuYztNCD2SSu3qav5xDkXFoRARfnRGrqY1',
-  FolderAccessCode = '1oEho4aHL_OPxPAUYBAKGRVHtwY7Lju37';
+const imageUpload = document.getElementById('imageUpload');
+const divDataOutputDisplay = document.getElementById('divDataOutputDisplay');
+const divPopupDisplay = document.getElementById('divPopup');
+const MODELS_PATH = './JS/models';
+const APIAccessCode =
+  'AKfycbwip48-94Ot2WwXuxGlBYgB6HoDWc4_VcSuYztNCD2SSu3qav5xDkXFoRARfnRGrqY1';
+const FolderAccessCode = '1oEho4aHL_OPxPAUYBAKGRVHtwY7Lju37';
 var labeledImagesPaths = [];
-function AccessDriveImages(e) {
-  var a = 'https://script.google.com/macros/s/' + APIAccessCode + '/exec',
-    t = new XMLHttpRequest();
-  if (
-    ((t.onreadystatechange = function () {
-      if (4 == t.readyState && 200 == t.status) {
-        var e = t.response;
-        if ('' != e) {
-          var a = JSON.parse(e).folder_items;
-          for (i = 0; i < a.length; i++) {
-            a[i].id;
-            labeledImagesPaths.push(a[i]);
-          }
-          start();
-        } else window.alert('Folder is empty');
-      }
-    }),
-    '' == e)
-  )
-    t.open('GET', a, !0), t.send();
-  else {
-    var s = {
-        method_name: 'allFilesInChildFolders',
-        service_request_data: { folder_id: e },
-      },
-      c = JSON.stringify(s);
-    t.open(
-      'POST',
-      a + '?Contenttype=application/json&userRequest=FileAccess',
-      !0
-    ),
-      t.send(c);
-  }
-}
-async function start() {
-  const e = document.getElementById('divDataOutputDisplay'),
-    a = await loadLabeledImages(labeledImagesPaths),
-    t = new faceapi.FaceMatcher(a, 0.6);
-  let s, i;
-  document.getElementById('divDataReferencesDisplay').append('Loaded'),
-    (divPopupDisplay.style.visibility = 'hidden'),
-    imageUpload.addEventListener('change', async () => {
-      s && s.remove(),
-        i && i.remove(),
-        (s = await faceapi.bufferToImage(imageUpload.files[0])),
-        e.append(s),
-        (i = faceapi.createCanvasFromMedia(s)),
-        e.append(i);
-      const a = { width: s.width, height: s.height };
-      faceapi.matchDimensions(i, a);
-      const c = await faceapi
-          .detectAllFaces(s)
-          .withFaceLandmarks()
-          .withFaceDescriptors(),
-        o = faceapi.resizeResults(c, a);
-      o.map((e) => t.findBestMatch(e.descriptor)).forEach((e, a) => {
-        const t = o[a].detection.box;
-        new faceapi.draw.DrawBox(t, { label: e.toString() }).draw(i);
-      });
-    });
-}
-function loadLabeledImages(e) {
-  const a = e;
-  return Promise.all(
-    a.map(async (e) => {
-      const a = [];
-      return (
-        e.filesList.map(async (e) => {
-          const t = 'data:image/jpeg;base64,' + e.base64,
-            s = new Image();
-          s.src = t;
-          const i = await faceapi
-            .detectSingleFace(s)
-            .withFaceLandmarks()
-            .withFaceDescriptor();
-          a.push(i.descriptor);
-        }),
-        new faceapi.LabeledFaceDescriptors(e.folderName, a)
-      );
-    })
-  );
-}
+
 Promise.all([
   faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_PATH),
   faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_PATH),
   faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_PATH),
 ]).then(AccessDriveImages(FolderAccessCode));
+
+function AccessDriveImages(accessID) {
+  var urlPart1 = 'https://script.google.com/macros/s/';
+  var id = APIAccessCode;
+  var extension = '/exec';
+  var serviceURL = urlPart1 + id + extension;
+  var xobj = new XMLHttpRequest();
+  xobj.onreadystatechange = function () {
+    if (xobj.readyState == 4 && xobj.status == 200) {
+      var responseData = xobj.response;
+      if (responseData != '') {
+        var options = JSON.parse(responseData);
+        var folderItemsList = options.folder_items;
+        var optionsHTML = '';
+        for (i = 0; i < folderItemsList.length; i++) {
+          const alteredGoogleURL =
+            'https://drive.google.com/uc?id=' + folderItemsList[i].id;
+          labeledImagesPaths.push(folderItemsList[i]);
+        }
+        start();
+      } else {
+        window.alert('Folder is empty');
+      }
+    } else {
+    }
+  };
+  if (accessID == '') {
+    xobj.open('GET', serviceURL, true);
+    xobj.send();
+  } else {
+    var headerObj = 'Contenttype=application/json&userRequest=FileAccess';
+    var obj = {
+      method_name: 'allFilesInChildFolders',
+      service_request_data: { folder_id: accessID },
+    };
+    var dbParam = JSON.stringify(obj);
+    xobj.open('POST', serviceURL + '?' + headerObj, true);
+    xobj.send(dbParam);
+  }
+}
+
+async function start() {
+  const container = document.getElementById('divDataOutputDisplay');
+  const labeledFaceDescriptors = await loadLabeledImages(labeledImagesPaths);
+  const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
+  let image;
+  let canvas;
+  const logger = document.getElementById('divDataReferencesDisplay');
+  logger.append('Loaded');
+  divPopupDisplay.style.visibility = 'hidden';
+  imageUpload.addEventListener('change', async () => {
+    if (image) image.remove();
+    if (canvas) canvas.remove();
+    image = await faceapi.bufferToImage(imageUpload.files[0]);
+    container.append(image);
+    canvas = faceapi.createCanvasFromMedia(image);
+    container.append(canvas);
+    const displaySize = { width: image.width, height: image.height };
+    faceapi.matchDimensions(canvas, displaySize);
+    const detections = await faceapi
+      .detectAllFaces(image)
+      .withFaceLandmarks()
+      .withFaceDescriptors();
+    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+    const results = resizedDetections.map((d) =>
+      faceMatcher.findBestMatch(d.descriptor)
+    );
+    results.forEach((result, i) => {
+      const box = resizedDetections[i].detection.box;
+      const drawBox = new faceapi.draw.DrawBox(box, {
+        label: result.toString(),
+      });
+      drawBox.draw(canvas);
+    });
+  });
+}
+
+function loadLabeledImages(paths) {
+  const labels = paths;
+  return Promise.all(
+    labels.map(async (label) => {
+      const descriptions = [];
+      label.filesList.map(async (fileItem) => {
+        const imgSource = 'data:image/jpeg;base64,' + fileItem.base64;
+        const img = new Image();
+        img.src = imgSource;
+        const detections = await faceapi
+          .detectSingleFace(img)
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+        descriptions.push(detections.descriptor);
+      });
+      return new faceapi.LabeledFaceDescriptors(label.folderName, descriptions);
+    })
+  );
+}
